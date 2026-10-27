@@ -14,3 +14,4 @@
   - Three distinct milestones: supplier task completed / blocker resolved / Logistics Ready
   - Logistics Ready ≠ clinical sign-off; servicing, documentation, clinical release remain outstanding
   - Verify in browser: 5 steps, milestones, 6 scenarios, Reset
+- [x] UX redesign: Agent Run (/), Business Case (/brief), Testing & Logs (/lab); one action at a time
