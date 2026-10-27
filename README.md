@@ -118,4 +118,4 @@ Potential future work includes introducing live model-based interpretation, lear
 
 ---
 
-**Built as an independent learning project using Lovable and AI-assisted development.** The case, organisations, records and operational
+**Built as an independent learning project using Lovable and AI-assisted development.** The case, organisations, records and operational scenarios are fictional.
