@@ -13,3 +13,5 @@
 - All workflow logic lives in pure TypeScript under src/engine (reducer `applyEvent`); UI and scenario tests must call it, never reimplement it — one source of truth for every view.
 - Interpreter output is only ever a SupplierClaim; only authorized warehouse goods receipts change stock — keeps AI out of authoritative records.
 - Business-changing records use stable IDs (task per kind+dependency, allocation per work order+part, message/receipt IDs) — guarantees idempotency.
+- Guided execution orchestration lives in src/engine/guided.ts and calls applyEvent; external events require explicit injection and each event retains its immediate snapshot, so neither automatic execution nor historical views fabricate records.
+- Shared demo and isolated scenario results use one resettable in-memory store; Reset Demo clears both to keep all three views consistent without introducing persistence.
