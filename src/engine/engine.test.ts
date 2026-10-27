@@ -33,3 +33,33 @@ describe("ExceptionOS engine", () => {
     expect(createSeed()).toEqual(createSeed());
   });
 });
+
+describe("corrections", () => {
+  it("valid supplier reply completes the task but the work order stays blocked", () => {
+    const s = runEvents(createSeed(), [ev.detect(), ev.coordinate(), ev.email()]);
+    expect(s.tasks.find((t) => t.kind === "supplier-response")!.status).toBe("Completed");
+    expect(s.workOrder.status).toBe("Blocked: Parts");
+    expect(s.dependency.state).toBe("Awaiting receipt");
+  });
+
+  it("missing technician availability keeps the blocker and names the requirement", () => {
+    const seed = createSeed();
+    seed.workOrder.technicianAvailable = false;
+    const s = runEvents(seed, [ev.detect(), ev.coordinate(), ev.email(), ev.receipt(), ev.resume()]);
+    expect(s.workOrder.status).toBe("Blocked: Parts");
+    expect(s.log.at(-1)!.error).toContain("Technician available");
+  });
+
+  it("unconfirmed downtime window keeps the blocker", () => {
+    const seed = createSeed();
+    seed.workOrder.downtimeWindowConfirmed = false;
+    const s = runEvents(seed, [ev.detect(), ev.coordinate(), ev.email(), ev.receipt(), ev.resume()]);
+    expect(s.workOrder.status).toBe("Blocked: Parts");
+  });
+
+  it("repeated resume never allocates twice", () => {
+    const s = runEvents(createSeed(), [ev.detect(), ev.coordinate(), ev.email(), ev.receipt(), ev.resume(1), ev.resume(2), ev.resume(3)]);
+    expect(s.allocations).toHaveLength(1);
+    expect(s.inventory.find((i) => i.partId === "P-USB-410")!.allocated).toBe(1);
+  });
+});

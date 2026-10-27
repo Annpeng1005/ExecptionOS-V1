@@ -1,6 +1,6 @@
 import { DEMO_START, PEOPLE } from "./seed";
 import { simulatedInterpreter, type MessageInterpreter } from "./interpreter";
-import { allocationGuards, available, etaThreatensAppointment, isCompatible } from "./rules";
+import { allocationGuards, available, demoNow, etaThreatensAppointment, isCompatible, readinessGuards } from "./rules";
 import type { EventLogEntry, SimEvent, SimState, SourceSystem, Task } from "./types";
 
 export interface EngineOptions {
@@ -9,19 +9,22 @@ export interface EngineOptions {
 
 const clone = <T,>(v: T): T => structuredClone(v);
 
-function stamp(clock: number) {
-  const d = new Date(new Date(DEMO_START + ":00Z").getTime() + clock * 60_000);
-  return d.toISOString().slice(0, 16).replace("T", " ");
+function stamp(s: SimState) {
+  const d = demoNow(s);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+void DEMO_START;
 
 function summary(s: SimState) {
   return `WO ${s.workOrder.status} · DEP ${s.dependency.state}`;
 }
 
-function addTask(s: SimState, t: Omit<Task, "id">) {
-  // Idempotent: never create two open tasks of the same kind for the same dependency.
-  if (s.tasks.some((x) => x.kind === t.kind && x.dependencyId === t.dependencyId)) return false;
-  s.tasks.push({ ...t, id: `TSK-${3001 + s.tasks.length}` });
+function addTask(s: SimState, t: Omit<Task, "id" | "status">) {
+  // Idempotent: stable ID per (kind, dependency) — never create the same task twice.
+  const id = `TSK-${t.dependencyId}-${t.kind}`;
+  if (s.tasks.some((x) => x.id === id)) return false;
+  s.tasks.push({ ...t, id, status: "Open" });
   return true;
 }
 
@@ -38,7 +41,7 @@ export function applyEvent(prev: SimState, event: SimEvent, opts: EngineOptions 
   ) =>
     s.log.push({
       eventId: event.eventId,
-      timestamp: stamp(s.clock),
+      timestamp: stamp(s),
       sourceSystem,
       input,
       action,
@@ -129,6 +132,9 @@ export function applyEvent(prev: SimState, event: SimEvent, opts: EngineOptions 
         });
         break;
       }
+      // A valid reply completes the communication task only. The parts blocker stays open.
+      const commTask = s.tasks.find((t) => t.kind === "supplier-response");
+      if (commTask) commTask.status = "Completed";
       dep.state = "Awaiting receipt";
       if (etaThreatensAppointment(claim.eta, s.workOrder.appointment)) {
         s.workOrder.status = "At Risk";
@@ -187,17 +193,31 @@ export function applyEvent(prev: SimState, event: SimEvent, opts: EngineOptions 
       break;
     }
     case "RESUME": {
-      const failed = allocationGuards(s).filter((g) => !g.pass);
-      if (failed.length) {
-        log("Rules", "Resume requested", "Blocked — prerequisites not met", { error: failed.map((f) => f.label).join("; ") });
+      const allocFailed = allocationGuards(s).filter((g) => !g.pass);
+      if (allocFailed.length) {
+        log("Rules", "Resume requested", "Blocked — allocation prerequisites not met", {
+          error: allocFailed.map((f) => f.label).join("; "),
+        });
         break;
       }
-      const receipt = s.receipts.find((r) => r.partId === part)!;
-      s.allocations.push({ id: `ALC-${5001 + s.allocations.length}`, partId: part, workOrderId: s.workOrder.id, receiptId: receipt.receiptId });
-      s.inventory.find((i) => i.partId === part)!.allocated += 1;
+      // Idempotent allocation: stable ID per work order + part.
+      const allocId = `ALC-${s.workOrder.id}-${part}`;
+      if (!s.allocations.some((a) => a.id === allocId)) {
+        const receipt = s.receipts.find((r) => r.partId === part)!;
+        s.allocations.push({ id: allocId, partId: part, workOrderId: s.workOrder.id, receiptId: receipt.receiptId });
+        s.inventory.find((i) => i.partId === part)!.allocated += 1;
+      }
+      const readyFailed = readinessGuards(s).filter((g) => !g.pass);
+      if (readyFailed.length) {
+        log("Rules", `Readiness check for ${s.workOrder.id}`, "Part allocated; blocker kept — requirements outstanding", {
+          error: readyFailed.map((f) => f.label).join("; "),
+          humanReview: PEOPLE.coordinator,
+        });
+        break;
+      }
       dep.state = "Resolved";
       s.workOrder.status = "Logistics Ready";
-      log("Field Service", `All guards passed for ${s.workOrder.id}`, "Allocated part; status → Logistics Ready (repair & clinical release remain human)");
+      log("Field Service", `All readiness guards passed for ${s.workOrder.id}`, "Allocated part; status → Logistics Ready (repair & clinical release remain human)");
       break;
     }
   }
