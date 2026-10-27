@@ -1,63 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Target, ChartNoAxesColumnIncreasing, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export const Route = createFileRoute("/brief")({
-  head: () => ({
-    meta: [
-      { title: "Business Case — ExceptionOS demo" },
-      { name: "description", content: "Fictional executive summary: reducing avoidable service delays and manual coordination for blocked service requests." },
-      { property: "og:title", content: "Business Case — ExceptionOS demo" },
-      { property: "og:description", content: "Problem, proposed AI-assisted solution, validation questions and unmeasured pilot measures." },
-    ],
-  }),
-  component: Brief,
-});
-
-const rows: [string, string][] = [
-  ["Customer problem", "A service appointment is at risk because a required part isn't in stock, and fixing it relies on manual hand-offs between Purchasing, the supplier, Inventory and Dispatch."],
-  ["Why this may matter", "Avoidable service delays and coordination effort. How often and how much is not yet known."],
-  ["Proposed solution", "An agent detects the blocker, assigns a Purchasing follow-up, records the supplier's reply as an unverified claim, and lets fixed rules confirm readiness only after a warehouse receipt. Existing systems stay authoritative."],
-  ["Needs customer validation", "Blocked-request volume, current ownership of supplier follow-up, receipt timeliness, and which decisions must stay human."],
-];
-
-const kpis = ["Blocker resolution time", "Correct workflow completion rate", "Human coordination effort per affected request"];
-
-function Brief() {
-  return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <div>
-        <div className="text-xs font-medium uppercase tracking-wider text-primary">Business Case · fictional customer</div>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          Reduce avoidable service delays and manual coordination across Purchasing, suppliers, Inventory and Dispatch.
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">A hypothesis to test — no customer findings yet.</p>
-      </div>
-
-      <dl className="divide-y rounded-lg border bg-card">
-        {rows.map(([k, v]) => (
-          <div key={k} className="grid gap-1 p-4 sm:grid-cols-[180px_1fr]">
-            <dt className="text-sm font-medium">{k}</dt>
-            <dd className="text-sm text-muted-foreground">{v}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <div>
-        <h2 className="mb-2 text-sm font-medium">Pilot success measures</h2>
-        <ul className="grid gap-3 sm:grid-cols-3">
-          {kpis.map((k) => (
-            <li key={k} className="rounded-lg border bg-card p-4">
-              <div className="text-sm font-medium">{k}</div>
-              <div className="mt-2 text-xs text-muted-foreground">Not measured — requires customer baseline</div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <Button asChild>
-        <Link to="/">See the agent run <ArrowRight className="h-4 w-4" /></Link>
-      </Button>
-    </div>
-  );
-}
+export const Route = createFileRoute("/brief")({ head: () => ({ meta: [
+  { title: "Business Case — ExceptionOS pilot hypothesis" }, { name: "description", content: "A fictional executive brief for keeping hospital equipment-service visits on track, with unmeasured baselines and pilot questions." },
+  { property: "og:title", content: "Business Case — ExceptionOS pilot hypothesis" }, { property: "og:description", content: "Customer objective, operational hypothesis, roles and practical pilot validation." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+] }), component: Brief });
+function Brief() { return <div className="mx-auto max-w-5xl space-y-6">
+  <div><div className="text-xs font-medium uppercase text-primary">Executive summary · fictional customer</div><h1 className="mt-2 text-3xl font-semibold">Keep hospital equipment-service visits on track.</h1><p className="mt-2 text-sm text-muted-foreground">A proposed coordination pilot. No validated customer findings or measured benefits yet.</p></div>
+  <div className="grid gap-4 md:grid-cols-3">{[
+    {icon:Target,title:"Customer objective",text:"Reduce avoidable service delays and manual coordination across Purchasing, suppliers, Inventory and Dispatch."},
+    {icon:ChartNoAxesColumnIncreasing,title:"Initial problem hypothesis",text:"An equipment-service appointment is at risk because a required component is unavailable. Supplier follow-up and receipt confirmation may require avoidable manual hand-offs."},
+    {icon:Workflow,title:"Proposed AI-assisted coordination",text:"Identify the missing-component dependency, assign follow-up, interpret the supplier reply as a claim, and verify authorized evidence before updating Field Service."},
+  ].map(({icon:Icon,title,text})=><section key={title} className="border-t border-primary/25 pt-4"><Icon className="mb-3 size-6 text-primary"/><h2 className="text-sm font-semibold">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{text}</p></section>)}</div>
+  <div className="grid gap-8 border-t pt-5 md:grid-cols-2"><section><h2 className="mb-3 text-sm font-semibold">Different roles. Different authority.</h2><ol className="space-y-3 text-sm">{[["Interpretation","Extracts part, quantity and ETA from messages. This demo uses a simulated interpreter, not a live model."],["Deterministic rules","Require independent warehouse evidence and logistics checks before allocation and Logistics Ready."],["Human decisions","Own supplier follow-up, exception decisions, warehouse authorization, servicing, documentation and clinical release."]].map(([k,v],i)=><li key={k} className="flex gap-3"><span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-primary">{i+1}</span><div><strong>{k}</strong><p className="mt-1 text-xs text-muted-foreground">{v}</p></div></li>)}</ol></section><section><h2 className="mb-3 text-sm font-semibold">Three questions before a pilot</h2><ol className="space-y-4 text-sm">{["Is this bottleneck frequent and costly enough to prioritize?","Does AI provide enough value beyond simpler automation?","Can the workflow be deployed reliably at an acceptable cost?"].map((q,i)=><li key={q} className="flex gap-3"><span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs">{i+1}</span>{q}</li>)}</ol></section></div>
+  <section className="border-t pt-5"><h2 className="mb-3 text-sm font-semibold">Proposed pilot measures</h2><div className="grid gap-5 sm:grid-cols-3">{["Blocker resolution time","Correct workflow completion rate","Human coordination effort"].map(k=><div key={k}><h3 className="text-sm font-medium">{k}</h3><p className="mt-1 text-xs text-muted-foreground">Not measured — requires customer baseline</p></div>)}</div></section>
+  <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-4"><p className="text-sm font-medium text-primary">Discover → Test → Pilot → Measure → Improve</p><Button asChild><Link to="/">See the simulated workflow <ArrowRight/></Link></Button></div><p className="text-xs text-muted-foreground">During a real deployment, customer corrections could become new regression tests. No automatic learning is implemented.</p>
+</div>; }
