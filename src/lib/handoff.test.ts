@@ -8,7 +8,7 @@ const final = (id: string) => runScenario(scenarios.find((s) => s.id === id)!).f
 describe("handoff reporting", () => {
   it("B2 handoff names Sam Whitfield and the mismatch", () => {
     expect(handoff(final("B2"))?.sentence).toBe(
-      "Warehouse received P-USB-405, but P-USB-410 is required. Sam Whitfield, Inventory Lead must reconcile the mismatch. The work order remains blocked: parts, and no component has been allocated.",
+      "Warehouse received P-USB-405, but P-USB-410 is required. Sam Whitfield, Inventory Lead must reconcile the mismatch. The work order remains blocked, and no component has been allocated.",
     );
   });
   it("B2 inventory lines identify each part", () => {

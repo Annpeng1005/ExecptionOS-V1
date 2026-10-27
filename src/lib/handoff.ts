@@ -38,7 +38,7 @@ export function handoff(s: SimState): Handoff | null {
   const req = s.workOrder.requiredPartId;
   const owner = clean(t.owner);
   const alloc = s.allocations.length ? `${s.allocations.length} component allocated` : "no component has been allocated";
-  const blocked = `The work order remains ${s.workOrder.status.toLowerCase()}, and ${alloc}.`;
+  const blocked = `The work order remains ${s.workOrder.status === "Blocked: Parts" ? "blocked" : s.workOrder.status.toLowerCase()}, and ${alloc}.`;
   if (t.kind === "reconciliation") {
     const receipt = s.receipts.find((r) => r.partId !== req);
     const claim = s.claims.find((c) => c.partId !== req);
