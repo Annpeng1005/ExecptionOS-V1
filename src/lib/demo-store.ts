@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
-import { applyEvent } from "@/engine/engine";
+import { advanceGuided, injectGuided, guidedPause } from "@/engine/guided";
 import { createSeed } from "@/engine/seed";
-import { ev } from "@/engine/scenarios";
+import { ev, scenarios, runScenario, type ScenarioResult } from "@/engine/scenarios";
 import type { SimEvent, SimState } from "@/engine/types";
 
 /** The five guided stages, each one real engine event. */
@@ -27,9 +27,10 @@ export const STAGES: Stage[] = [
 interface DemoState {
   /** snapshots[0] = seed; snapshots[i] = state immediately after stage i. */
   snapshots: SimState[];
+  results: Record<string, ScenarioResult>;
 }
 
-let state: DemoState = { snapshots: [createSeed()] };
+let state: DemoState = { snapshots: [createSeed()], results: {} };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
@@ -40,22 +41,36 @@ export const demo = {
     return () => listeners.delete(l);
   },
   next() {
-    const i = state.snapshots.length - 1;
-    if (i >= STAGES.length) return;
-    const after = applyEvent(state.snapshots[i]!, STAGES[i]!.event());
-    state = { snapshots: [...state.snapshots, after] };
+    state = { ...state, snapshots: advanceGuided(state.snapshots, false) };
+    emit();
+  },
+  run() {
+    state = { ...state, snapshots: advanceGuided(state.snapshots, true) };
+    emit();
+  },
+  injectSupplier(part = "P-USB-410") {
+    state = { ...state, snapshots: injectGuided(state.snapshots, ev.email(part)) };
+    emit();
+  },
+  injectReceipt(part = "P-USB-410") {
+    state = { ...state, snapshots: injectGuided(state.snapshots, ev.receipt(part)) };
+    emit();
+  },
+  runTests(id?: string) {
+    const selected = id ? scenarios.filter((s) => s.id === id) : scenarios;
+    state = { ...state, results: { ...state.results, ...Object.fromEntries(selected.map((s) => [s.id, runScenario(s)])) } };
     emit();
   },
   reset() {
-    state = { snapshots: [createSeed()] };
+    state = { snapshots: [createSeed()], results: {} };
     emit();
   },
 };
 
 export function useDemo() {
   const s = useSyncExternalStore(demo.subscribe, demo.get, demo.get);
-  const current = s.snapshots[s.snapshots.length - 1]!;
-  return { snapshots: s.snapshots, current, stepsRun: s.snapshots.length - 1 };
+  const current = s.snapshots.at(-1) ?? createSeed();
+  return { snapshots: s.snapshots, current, results: s.results, stepsRun: s.snapshots.length - 1, pause: guidedPause(current, s.snapshots.length - 1) };
 }
 
 /** Milestones derived only from engine state. */
@@ -97,7 +112,8 @@ export function stateChanges(before: SimState, after: SimState): { label: string
   const rec = (s: SimState) => s.receipts.map((r) => `${r.quantity} × ${r.partId}`).join("; ") || "none";
   add("Inventory/ERP", "Warehouse receipts", rec(before), rec(after));
   for (const i of after.inventory) {
-    const b = before.inventory.find((x) => x.partId === i.partId)!;
+    const b = before.inventory.find((x) => x.partId === i.partId);
+    if (!b) continue;
     add("Inventory/ERP", `${i.partId} stock`, `${b.onHand} on hand, ${b.allocated} allocated`, `${i.onHand} on hand, ${i.allocated} allocated`);
   }
   const al = (s: SimState) => s.allocations.map((a) => `${a.partId} → ${a.workOrderId}`).join("; ") || "none";
