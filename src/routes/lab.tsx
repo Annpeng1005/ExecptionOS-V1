@@ -160,7 +160,7 @@ function Record({ title, rows }: { title: string; rows: [string, string][] }) {
   );
 }
 
-function Count({ n, label, tone }: { n: number; label: string; tone?: string }) {
+function Count({ n, label, tone }: { n: number; label: string; tone?: string | undefined }) {
   return (
     <div>
       <div className={cn("text-2xl font-semibold", tone)} data-testid={`count-${label}`}>{n}</div>
