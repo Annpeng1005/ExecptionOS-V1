@@ -8,7 +8,7 @@
 - [x] Run happy-path + wrong-component tests before building UI
 
 - Guided workflow must show per-step snapshot state, not final state retroactively (UI phase)
-- [ ] Phase 2: Client Brief (/), Live Workflow (/workflow), Deployment Lab (/lab)
+- [x] Phase 2: Client Brief (/), Live Workflow (/workflow), Deployment Lab (/lab)
   - Objective wording, 3 KPIs "Not measured — requires customer baseline", no hospital-cancellation claims
   - Purchasing-owned supplier follow-up; reply = unverified claim; no courier tracking
   - Three distinct milestones: supplier task completed / blocker resolved / Logistics Ready

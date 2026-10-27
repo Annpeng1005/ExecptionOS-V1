@@ -87,7 +87,7 @@ function Workflow() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Guided workflow</h2>
           <Button size="sm" onClick={() => demo.next()} disabled={stepsRun >= STAGES.length}>
             <Play className="h-3.5 w-3.5" />
-            {stepsRun >= STAGES.length ? "All stages run" : `Run ${STAGES[stepsRun].label}`}
+            {stepsRun >= STAGES.length ? "All stages run" : `Run ${STAGES[stepsRun]!.label}`}
           </Button>
         </div>
         <ol className="divide-y rounded-md border bg-card">
@@ -95,7 +95,7 @@ function Workflow() {
             const snap = snapshots[i + 1];
             const ran = !!snap;
             const ok = ran && stageVerified(st.key, snap);
-            const entries = ran ? snap.log.slice(snapshots[i].log.length) : [];
+            const entries = ran ? snap.log.slice(snapshots[i]!.log.length) : [];
             return (
               <li key={st.key} data-testid={`stage-${st.key}`} data-state={ok ? "verified" : ran ? "not-verified" : "pending"} className="grid gap-3 p-4 md:grid-cols-[180px_1fr_200px]">
                 <div className="flex items-center gap-2">

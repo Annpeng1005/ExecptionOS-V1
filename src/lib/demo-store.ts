@@ -31,7 +31,7 @@ export const demo = {
   next() {
     const i = state.snapshots.length - 1;
     if (i >= STAGES.length) return;
-    const after = applyEvent(state.snapshots[i], STAGES[i].event());
+    const after = applyEvent(state.snapshots[i]!, STAGES[i]!.event());
     state = { snapshots: [...state.snapshots, after] };
     emit();
   },
@@ -43,7 +43,7 @@ export const demo = {
 
 export function useDemo() {
   const s = useSyncExternalStore(demo.subscribe, demo.get, demo.get);
-  const current = s.snapshots[s.snapshots.length - 1];
+  const current = s.snapshots[s.snapshots.length - 1]!;
   return { snapshots: s.snapshots, current, stepsRun: s.snapshots.length - 1 };
 }
 
