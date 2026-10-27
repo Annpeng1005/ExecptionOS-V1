@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Eyebrow, Section } from "@/components/demo-ui";
-import { useDemo } from "@/lib/demo-store";
-import { runScenario, scenarios, type ScenarioResult } from "@/engine/scenarios";
+import { demo, useDemo } from "@/lib/demo-store";
+import { scenarios } from "@/engine/scenarios";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/lab")({
@@ -14,26 +13,27 @@ export const Route = createFileRoute("/lab")({
       { name: "description", content: "Mock system records, executable failure scenarios and the boundary between message interpretation and deterministic rules." },
       { property: "og:title", content: "Testing & Logs — ExceptionOS demo" },
       { property: "og:description", content: "Run six scenarios against the real engine and inspect pass/fail results." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Lab,
 });
 
 function Lab() {
-  const { current } = useDemo();
+  const { current, results } = useDemo();
   // Scenario results are isolated: each run starts from a fresh seed, never the live demo.
-  const [results, setResults] = useState<Record<string, ScenarioResult>>({});
-  const runAll = () => setResults(Object.fromEntries(scenarios.map((s) => [s.id, runScenario(s)])));
+  const runAll = () => demo.runTests();
   const ran = Object.values(results);
   const passed = ran.filter((r) => r.pass).length;
   const failed = ran.length - passed;
   const notRun = scenarios.length - ran.length;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <div className="space-y-2">
         <Eyebrow>Testing & Logs</Eyebrow>
-        <h1 className="text-2xl font-semibold tracking-tight">Does the agent fail safely?</h1>
+        <h1 className="text-3xl font-semibold">Test the workflow. Inspect the evidence.</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           Each scenario runs the real workflow rules from a clean start. Running them never changes the Agent Run screen.
         </p>
@@ -46,7 +46,8 @@ function Lab() {
         <Button className="ml-auto" onClick={runAll}>Run all scenarios</Button>
       </div>
 
-      <Section title="Interpretation vs deterministic rules">
+      <details className="border-t pt-4">
+        <summary className="cursor-pointer text-sm font-semibold">Simulated interpretation vs deterministic rules</summary>
         <div className="grid gap-px overflow-hidden rounded-md border bg-border md:grid-cols-2">
           <div className="bg-card p-4 text-sm">
             <div className="font-medium">Simulated message interpretation</div>
@@ -57,7 +58,8 @@ function Lab() {
             <p className="mt-1 text-muted-foreground">Decide allocation and Logistics Ready. Stock changes only through an authorized warehouse receipt. Same input, same result, every time.</p>
           </div>
         </div>
-      </Section>
+        <p className="mt-3 text-xs text-muted-foreground">Synthetic tests do not establish production reliability or autonomous execution rates. A real pilot must validate trusted event sources, customer baselines, integration failures, costs and oversight.</p>
+      </details>
 
       <Section title="Mock system records (current Agent Run state)">
         <div className="grid gap-6 md:grid-cols-3">
@@ -103,13 +105,16 @@ function Lab() {
                     {r && (r.pass
                       ? <span className="flex items-center gap-1 text-sm text-success"><Check className="h-4 w-4" />Pass</span>
                       : <span className="flex items-center gap-1 text-sm text-destructive"><X className="h-4 w-4" />Fail</span>)}
-                    <Button size="sm" variant="outline" onClick={() => setResults((p) => ({ ...p, [sc.id]: runScenario(sc) }))}>Run</Button>
+            <Button size="sm" variant="outline" onClick={() => demo.runTests(sc.id)}>Run</Button>
                   </div>
                 </div>
                 {r && (
                   <p className={cn("mt-2 text-sm", r.pass ? "text-success" : "text-destructive")}>
-                    {r.pass ? `Behaved as expected: ${sc.expectedOutcome.toLowerCase()}.` : `Did not behave as expected — ${r.checks.filter((c) => !c.pass).map((c) => `${c.label}: expected ${c.expected}, got ${c.actual}`).join("; ")}.`}
+                    Actual: {r.final.workOrder.status} · dependency {r.final.dependency.state} · {r.final.allocations.length} allocation(s). {r.pass ? "All checks passed." : "Some checks failed."}
                   </p>
+                )}
+                {r && (
+                  <div className="mt-2 text-xs text-muted-foreground">Human escalation: {r.final.tasks.filter((t) => t.status === "Open" && t.kind !== "supplier-response").map((t) => `${t.owner}: ${t.title}`).join("; ") || "None required by this scenario."}</div>
                 )}
                 {r && (
                   <details className="mt-2 text-sm">
@@ -130,6 +135,7 @@ function Lab() {
                         <li key={k}>
                           {e.timestamp} [{e.sourceSystem}] {e.action}
                           {e.error && <span className="text-destructive"> · error: {e.error}</span>}
+                          <div className="text-muted-foreground">{e.resultingState}{e.humanReview && ` · Human review: ${e.humanReview}`}</div>
                         </li>
                       ))}
                     </ol>

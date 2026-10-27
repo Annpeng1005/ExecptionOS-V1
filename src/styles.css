@@ -150,5 +150,8 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    letter-spacing: 0;
   }
+  h1, h2, h3, button, a { letter-spacing: 0; }
 }
