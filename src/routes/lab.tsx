@@ -59,7 +59,7 @@ function Lab() {
         </div>
       </Section>
 
-      <Section title="Mock system records (live demo state)">
+      <Section title="Mock system records (current Agent Run state)">
         <div className="grid gap-6 md:grid-cols-3">
           <Record title="Field Service" rows={[
             ["Work order", current.workOrder.id],
