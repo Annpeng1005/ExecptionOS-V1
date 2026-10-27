@@ -8,7 +8,8 @@ The project translates a fictional customer problem into a working simulation, d
 **Live Demo:** Coming soon  
 **2-Minute Walkthrough:** Coming soon
 
-![ExceptionOS workflow](https://github.com/user-attachments/assets/579990d7-d755-4d31-bca2-d79834d5e6c4)
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/85565bdb-2c5a-48ff-98a3-3c11d11f89fa" />
+
 
 > **Project scope:** Built with Lovable and AI-assisted development using fictional data, simulated enterprise systems, a TypeScript workflow engine, and deterministic business rules. Supplier-message interpretation is simulated; no live language model or customer integrations are connected.
 
