@@ -28,9 +28,10 @@ interface DemoState {
   /** snapshots[0] = seed; snapshots[i] = state immediately after stage i. */
   snapshots: SimState[];
   results: Record<string, ScenarioResult>;
+  resetVersion: number;
 }
 
-let state: DemoState = { snapshots: [createSeed()], results: {} };
+let state: DemoState = { snapshots: [createSeed()], results: {}, resetVersion: 0 };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
@@ -62,7 +63,7 @@ export const demo = {
     emit();
   },
   reset() {
-    state = { snapshots: [createSeed()], results: {} };
+    state = { snapshots: [createSeed()], results: {}, resetVersion: state.resetVersion + 1 };
     emit();
   },
 };
@@ -70,7 +71,7 @@ export const demo = {
 export function useDemo() {
   const s = useSyncExternalStore(demo.subscribe, demo.get, demo.get);
   const current = s.snapshots.at(-1) ?? createSeed();
-  return { snapshots: s.snapshots, current, results: s.results, stepsRun: s.snapshots.length - 1, pause: guidedPause(current, s.snapshots.length - 1) };
+  return { snapshots: s.snapshots, current, results: s.results, resetVersion: s.resetVersion, stepsRun: s.snapshots.length - 1, pause: guidedPause(current, s.snapshots.length - 1) };
 }
 
 /** Milestones derived only from engine state. */

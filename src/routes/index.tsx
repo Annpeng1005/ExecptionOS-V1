@@ -30,6 +30,10 @@ function owner(s: SimState) {
 const icons = [Search, MessageSquare, ClipboardList, PackageCheck, Check];
 
 function AgentRun() {
+  const { resetVersion } = useDemo();
+  return <AgentWorkspace key={resetVersion} />;
+}
+function AgentWorkspace() {
   const { snapshots, current, stepsRun, pause } = useDemo();
   const [inspect, setInspect] = useState<number | null>(null);
   const [mode, setMode] = useState<"automatic" | "step">("automatic");
