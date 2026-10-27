@@ -8,6 +8,7 @@ import { readinessGuards } from "@/engine/rules";
 import { PEOPLE } from "@/engine/seed";
 import type { SimState } from "@/engine/types";
 import { cn } from "@/lib/utils";
+import { handoff, inventoryLines, outcomeLabel } from "@/lib/handoff";
 import ultrasound from "@/assets/ultrasound.jpg";
 
 export const Route = createFileRoute("/")({
@@ -44,6 +45,7 @@ function AgentWorkspace() {
   const m = milestones(current);
   const wo = current.workOrder;
   const part = current.inventory.find((i) => i.partId === wo.requiredPartId);
+  const ho = handoff(current);
   const reviewTask = current.tasks.find((t) => t.status === "Open" && t.kind !== "supplier-response");
   const nextLabel = pause === "human" ? "Human review required" : pause === "supplier" ? "Supplier reply required" : pause === "warehouse" ? "Authorized warehouse receipt required" : pause === "complete" ? "Technician service visit" : next?.title ?? "Human review";
   const title = pause === "supplier" ? "Waiting for the supplier" : pause === "warehouse" ? "Waiting for physical receipt" : pause === "human" ? "Pause for human review" : pause === "complete" ? "The service visit can proceed" : next?.title;
