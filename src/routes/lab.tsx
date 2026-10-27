@@ -5,6 +5,8 @@ import { Eyebrow, Section } from "@/components/demo-ui";
 import { demo, useDemo } from "@/lib/demo-store";
 import { scenarios } from "@/engine/scenarios";
 import { cn } from "@/lib/utils";
+import { operationalSummary, outcomeLabel } from "@/lib/handoff";
+import { createSeed } from "@/engine/seed";
 
 export const Route = createFileRoute("/lab")({
   head: () => ({
@@ -109,6 +111,12 @@ function Lab() {
                   </div>
                 </div>
                 {r && (
+                  <div className="mt-2 text-sm" data-testid={`summary-${sc.id}`}>
+                    <span className={cn("mr-2 rounded px-1.5 py-0.5 text-xs font-medium", outcomeLabel(r.final) === "Service logistics ready" ? "bg-success/15 text-success" : outcomeLabel(r.final) === "Execution error" ? "bg-destructive/10 text-destructive" : "bg-warning/20 text-warning-foreground")}>{outcomeLabel(r.final)}</span>
+                    {operationalSummary(r.final, createSeed())}
+                  </div>
+                )}
+                {r && (
                   <details className="mt-2 text-sm">
                     <summary className="cursor-pointer text-muted-foreground">Checks and event history</summary>
                     <p className="mt-2 text-xs text-muted-foreground">{sc.description}</p>
@@ -131,7 +139,7 @@ function Lab() {
                       {r.final.log.map((e, k) => (
                         <li key={k}>
                           {e.timestamp} [{e.sourceSystem}] {e.action}
-                          {e.error && <span className="text-destructive"> · error: {e.error}</span>}
+                          {e.error && <span className="text-destructive"> · {e.error.startsWith("Expected") || e.error.startsWith("Duplicate") || e.error.startsWith("Unauthorized") ? "validation blocked" : "error"}: {e.error}</span>}
                           <div className="text-muted-foreground">{e.resultingState}{e.humanReview && ` · Human review: ${e.humanReview}`}</div>
                         </li>
                       ))}
