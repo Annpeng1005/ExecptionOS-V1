@@ -93,32 +93,29 @@ function Lab() {
 
       <Section title="Executable scenarios">
         <div className="divide-y rounded-md border bg-card">
+          <div className="hidden gap-4 px-4 py-2 text-xs font-semibold text-muted-foreground md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5rem_4rem]"><span>Scenario</span><span>Expected result</span><span>Run</span><span>Actual</span></div>
           {scenarios.map((sc) => {
             const r = results[sc.id];
             return (
-              <div key={sc.id} data-testid={`scenario-${sc.id}`} data-result={r ? (r.pass ? "pass" : "fail") : "not-run"} className="p-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="font-mono text-xs text-muted-foreground">{sc.id}</span>
-                  <span className="font-medium">{sc.title}</span>
-                  <span className="w-full text-sm text-muted-foreground md:w-auto">{sc.description} Expected: {sc.expectedOutcome.toLowerCase()}.</span>
-                  <div className="ml-auto flex items-center gap-2">
-                    {r && (r.pass
+              <div key={sc.id} data-testid={`scenario-${sc.id}`} data-result={r ? (r.pass ? "pass" : "fail") : "not-run"} className="px-4 py-3">
+                <div className="grid items-center gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5rem_4rem] md:gap-4">
+                  <span className="text-sm font-medium"><span className="mr-2 font-mono text-xs text-muted-foreground">{sc.id}</span>{sc.title}</span>
+                  <span className="text-xs text-muted-foreground"><span className="md:hidden">Expected: </span>{sc.expectedOutcome}</span>
+                  <Button size="sm" variant="outline" className="w-fit" aria-label={`Run scenario ${sc.id}`} onClick={() => demo.runTests(sc.id)}>Run</Button>
+                  <div className="text-xs">
+                    {r ? (r.pass
                       ? <span className="flex items-center gap-1 text-sm text-success"><Check className="h-4 w-4" />Pass</span>
-                      : <span className="flex items-center gap-1 text-sm text-destructive"><X className="h-4 w-4" />Fail</span>)}
-            <Button size="sm" variant="outline" onClick={() => demo.runTests(sc.id)}>Run</Button>
+                      : <span className="flex items-center gap-1 text-sm text-destructive"><X className="h-4 w-4" />Fail</span>) : <span className="text-muted-foreground">Not run</span>}
                   </div>
                 </div>
                 {r && (
-                  <p className={cn("mt-2 text-sm", r.pass ? "text-success" : "text-destructive")}>
-                    Actual: {r.final.workOrder.status} · dependency {r.final.dependency.state} · {r.final.allocations.length} allocation(s). {r.pass ? "All checks passed." : "Some checks failed."}
-                  </p>
-                )}
-                {r && (
-                  <div className="mt-2 text-xs text-muted-foreground">Human escalation: {r.final.tasks.filter((t) => t.status === "Open" && t.kind !== "supplier-response").map((t) => `${t.owner}: ${t.title}`).join("; ") || "None required by this scenario."}</div>
-                )}
-                {r && (
                   <details className="mt-2 text-sm">
                     <summary className="cursor-pointer text-muted-foreground">Checks and event history</summary>
+                    <p className="mt-2 text-xs text-muted-foreground">{sc.description}</p>
+                    <p className={cn("mt-2 text-xs", r.pass ? "text-success" : "text-destructive")}>
+                      Actual: {r.final.workOrder.status} · dependency {r.final.dependency.state} · {r.final.allocations.length} allocation(s).
+                    </p>
+                    <div className="mt-2 text-xs text-muted-foreground">Human escalation: {r.final.tasks.filter((t) => t.status === "Open" && t.kind !== "supplier-response").map((t) => `${t.owner}: ${t.title}`).join("; ") || "None required by this scenario."}</div>
                     <table className="mt-2 w-full text-xs">
                       <thead className="text-left text-muted-foreground"><tr><th className="py-1">Check</th><th>Expected</th><th>Actual</th><th /></tr></thead>
                       <tbody>

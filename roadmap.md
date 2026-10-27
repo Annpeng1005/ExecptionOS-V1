@@ -17,3 +17,5 @@
 - [x] UX redesign: Agent Run (/), Business Case (/brief), Testing & Logs (/lab); one action at a time
 - [x] Final showcase: simplified workspace, explicit external-event pauses, concise Business Case, scenario evidence
 - [x] Verify 13 engine tests, both execution modes, wrong components, history, tab consistency and full reset
+- [x] Final usability: simplify execution controls, clarify coordinator versus follow-up ownership, compact scenario rows
+- [x] Verify existing tests (13 engine + 6 guided + 1 routing), happy path, external pauses, wrong component, six scenarios, manual steps and complete reset in browser
