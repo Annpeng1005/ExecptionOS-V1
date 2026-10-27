@@ -1,16 +1,16 @@
-# ExceptionOS
- AI-assisted medical equipment service coordination prototype with workflow automation, human approvals, and agent evaluations.
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/579990d7-d755-4d31-bca2-d79834d5e6c4" />
-# ExceptionOS
+
 ### From operational blockers to verified service readiness
 
-**ExceptionOS** is a fictional AI-agent deployment proof of concept exploring how a medical-equipment service provider could coordinate supplier communications, inventory verification, and field-service operations.
+**ExceptionOS** is an interactive proof of concept exploring how a medical-equipment service provider could coordinate supplier follow-ups, inventory verification, and field-service operations.
 
-The project focuses on turning a fragmented operational process into a traceable workflow with clear ownership, verified evidence, and safe exception handling.
+The project translates a fictional customer problem into a working simulation, demonstrating how to coordinate responsibilities across existing systems, verify information before taking action, and route exceptions to the appropriate teams.
 
-**[Live Demo](INSERT_LINK) · [2-Minute Walkthrough](INSERT_LINK)**
+**Live Demo:** Coming soon  
+**2-Minute Walkthrough:** Coming soon
 
-> **Project scope:** Interactive simulation built with AI-assisted development. Uses fictional data, mock enterprise systems, a deterministic workflow engine, and simulated message interpretation. No real customer systems or live LLM are connected.
+![ExceptionOS workflow](https://github.com/user-attachments/assets/579990d7-d755-4d31-bca2-d79834d5e6c4)
+
+> **Project scope:** Built with Lovable and AI-assisted development using fictional data, simulated enterprise systems, a TypeScript workflow engine, and deterministic business rules. Supplier-message interpretation is simulated; no live language model or customer integrations are connected.
 
 ## 1. The Business Problem
 
