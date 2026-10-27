@@ -7,7 +7,7 @@ export const APPOINTMENT = "2026-10-27T13:00"; // Tuesday 13:00
 /** Baseline state. Every reset returns a fresh deep copy of this. */
 export function createSeed(): SimState {
   return {
-    clock: 0,
+    clock: 0, // demo "now" = DEMO_START + clock minutes
     workOrder: {
       id: "SR-2041",
       customer: "Lakeshore General Hospital (demo)",
@@ -15,6 +15,9 @@ export function createSeed(): SimState {
       equipment: "Ultrasound system US-7 · serial DEMO-88213",
       appointment: APPOINTMENT,
       technician: "Priya Raman (demo)",
+      technicianQualified: true,
+      technicianAvailable: true,
+      downtimeWindowConfirmed: true,
       requiredPartId: REQUIRED_PART,
       status: "Scheduled",
       businessImpact: "Imaging room capacity reduced until service visit is completed.",

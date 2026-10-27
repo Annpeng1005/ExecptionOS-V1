@@ -26,6 +26,10 @@ export interface WorkOrder {
   equipment: string;
   appointment: string; // ISO local, demo clock
   technician: string;
+  /** Field Service facts used by the readiness guard. */
+  technicianQualified: boolean;
+  technicianAvailable: boolean;
+  downtimeWindowConfirmed: boolean;
   requiredPartId: string;
   status: WorkOrderStatus;
   businessImpact: string;
@@ -53,6 +57,7 @@ export interface Task {
   dependencyId: string;
   owner: string;
   title: string;
+  status: "Open" | "Completed";
   deadline: string | null;
   sourceEventId: string;
 }
