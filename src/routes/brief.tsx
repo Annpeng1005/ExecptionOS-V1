@@ -1,97 +1,63 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Eyebrow, Section } from "@/components/demo-ui";
 
 export const Route = createFileRoute("/brief")({
   head: () => ({
     meta: [
       { title: "Business Case — ExceptionOS demo" },
-      { name: "description", content: "Fictional case brief: reducing avoidable service delays and manual coordination for a blocked equipment-service request." },
+      { name: "description", content: "Fictional executive summary: reducing avoidable service delays and manual coordination for blocked service requests." },
       { property: "og:title", content: "Business Case — ExceptionOS demo" },
-      { property: "og:description", content: "Hypothesis, authority boundaries and unmeasured pilot metrics for AI-assisted service coordination." },
+      { property: "og:description", content: "Problem, proposed AI-assisted solution, validation questions and unmeasured pilot measures." },
     ],
   }),
   component: Brief,
 });
 
-const kpis = [
-  { name: "Blocker resolution time", def: "Time from blocker detection to the service request becoming Logistics Ready." },
-  { name: "Correct workflow completion rate", def: "Share of affected requests that reach the correct outcome without rework or wrong-part allocation." },
-  { name: "Human coordination effort per affected request", def: "Manual touches across Purchasing, Inventory and Dispatch per blocked request." },
+const rows: [string, string][] = [
+  ["Customer problem", "A service appointment is at risk because a required part isn't in stock, and fixing it relies on manual hand-offs between Purchasing, the supplier, Inventory and Dispatch."],
+  ["Why this may matter", "Avoidable service delays and coordination effort. How often and how much is not yet known."],
+  ["Proposed solution", "An agent detects the blocker, assigns a Purchasing follow-up, records the supplier's reply as an unverified claim, and lets fixed rules confirm readiness only after a warehouse receipt. Existing systems stay authoritative."],
+  ["Needs customer validation", "Blocked-request volume, current ownership of supplier follow-up, receipt timeliness, and which decisions must stay human."],
 ];
+
+const kpis = ["Blocker resolution time", "Correct workflow completion rate", "Human coordination effort per affected request"];
 
 function Brief() {
   return (
-    <div className="space-y-10">
-      <div className="max-w-3xl space-y-4">
-        <Eyebrow>Client brief · fictional customer</Eyebrow>
-        <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+    <div className="mx-auto max-w-3xl space-y-8">
+      <div>
+        <div className="text-xs font-medium uppercase tracking-wider text-primary">Business Case · fictional customer</div>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
           Reduce avoidable service delays and manual coordination across Purchasing, suppliers, Inventory and Dispatch.
         </h1>
-        <p className="text-muted-foreground">
-          Customer objective for a fictional medical-equipment service organisation. Everything below is a hypothesis to test, not a validated finding.
-        </p>
-        <Button asChild>
-          <Link to="/workflow">Explore Workflow <ArrowRight className="h-4 w-4" /></Link>
-        </Button>
+        <p className="mt-2 text-sm text-muted-foreground">A hypothesis to test — no customer findings yet.</p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <Section title="Hypothetical problem">
-          <p className="text-sm leading-relaxed">
-            An equipment-service appointment (SR-2041, Tuesday 13:00) is at risk because the required component is not available in stock.
-            Resolving it today needs hand-offs between Purchasing, the supplier, Inventory and Dispatch, tracked by email and memory.
-          </p>
-          <p className="mt-3 text-xs text-muted-foreground">Assumed, not observed: how often this happens and how much effort it consumes.</p>
-        </Section>
-        <Section title="Validated findings">
-          <p className="text-sm text-muted-foreground">
-            None yet. No customer data has been reviewed. The demo shows a mechanism; it does not show impact.
-          </p>
-        </Section>
-      </div>
+      <dl className="divide-y rounded-lg border bg-card">
+        {rows.map(([k, v]) => (
+          <div key={k} className="grid gap-1 p-4 sm:grid-cols-[180px_1fr]">
+            <dt className="text-sm font-medium">{k}</dt>
+            <dd className="text-sm text-muted-foreground">{v}</dd>
+          </div>
+        ))}
+      </dl>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <Section title="Why AI-assisted coordination might help">
-          <ul className="list-disc space-y-1.5 pl-5 text-sm">
-            <li>Detects the blocker and assigns a named owner and deadline straight away.</li>
-            <li>Creates a Purchasing-owned supplier follow-up instead of relying on inbox memory.</li>
-            <li>Reads the supplier reply and records it as an unverified claim.</li>
-            <li>Applies the same readiness rules every time and lists what is still outstanding.</li>
-          </ul>
-        </Section>
-        <Section title="What stays authoritative">
-          <dl className="space-y-2 text-sm">
-            <div><dt className="font-medium">Field Service</dt><dd className="text-muted-foreground">Appointment, technician, status. Agent never reschedules.</dd></div>
-            <div><dt className="font-medium">Inventory / ERP</dt><dd className="text-muted-foreground">Stock changes only through an authorized warehouse receipt.</dd></div>
-            <div><dt className="font-medium">Supplier email</dt><dd className="text-muted-foreground">The record of what the supplier said — a claim, not proof of stock.</dd></div>
-          </dl>
-        </Section>
-      </div>
-
-      <Section title="Proposed pilot metrics">
-        <div className="grid gap-px overflow-hidden rounded-md border bg-border md:grid-cols-3">
+      <div>
+        <h2 className="mb-2 text-sm font-medium">Pilot success measures</h2>
+        <ul className="grid gap-3 sm:grid-cols-3">
           {kpis.map((k) => (
-            <div key={k.name} className="bg-card p-4">
-              <div className="font-medium">{k.name}</div>
-              <p className="mt-1 text-sm text-muted-foreground">{k.def}</p>
-              <div className="mt-3 text-xs font-medium text-warning-foreground">Not measured — requires customer baseline</div>
-            </div>
+            <li key={k} className="rounded-lg border bg-card p-4">
+              <div className="text-sm font-medium">{k}</div>
+              <div className="mt-2 text-xs text-muted-foreground">Not measured — requires customer baseline</div>
+            </li>
           ))}
-        </div>
-      </Section>
-
-      <Section title="Assumptions and questions to validate">
-        <ul className="grid gap-2 text-sm md:grid-cols-2">
-          <li>How many service requests per month are blocked by parts, and for how long?</li>
-          <li>Who owns supplier follow-up today, and how is it tracked?</li>
-          <li>Are warehouse receipts recorded promptly enough to rely on?</li>
-          <li>Which readiness checks does Dispatch apply before confirming a visit?</li>
-          <li>Which actions must always require a human decision?</li>
-          <li>Can the agent read Field Service and ERP records with appropriate access?</li>
         </ul>
-      </Section>
+      </div>
+
+      <Button asChild>
+        <Link to="/">See the agent run <ArrowRight className="h-4 w-4" /></Link>
+      </Button>
     </div>
   );
 }

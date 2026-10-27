@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Circle, CircleDashed, Play } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, ArrowRight, Check, ChevronDown, Circle, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Eyebrow, StatusBadge, fmt } from "@/components/demo-ui";
-import { STAGES, demo, milestones, stageVerified, useDemo } from "@/lib/demo-store";
+import { StatusBadge, fmt } from "@/components/demo-ui";
+import { STAGES, demo, milestones, stageVerified, stateChanges, useDemo } from "@/lib/demo-store";
 import { readinessGuards } from "@/engine/rules";
 import { PEOPLE } from "@/engine/seed";
 import type { SimState } from "@/engine/types";
@@ -11,183 +12,236 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Live Workflow — SR-2041 · ExceptionOS demo" },
-      { name: "description", content: "Step through detection, supplier follow-up, claim interpretation, warehouse verification and readiness for SR-2041." },
-      { property: "og:title", content: "Live Workflow — SR-2041 · ExceptionOS demo" },
-      { property: "og:description", content: "Five engine-driven stages with three distinct, state-verified milestones." },
+      { title: "Agent Run — SR-2041 · ExceptionOS demo" },
+      { name: "description", content: "Guide the agent step by step through a blocked ultrasound service request and see each verified result." },
+      { property: "og:title", content: "Agent Run — SR-2041 · ExceptionOS demo" },
+      { property: "og:description", content: "Problem, action, verified result, next step — for a missing-part service request." },
     ],
   }),
-  component: Workflow,
+  component: AgentRun,
 });
 
-function nextAction(s: SimState): { owner: string; action: string } {
+function owner(s: SimState) {
   const open = s.tasks.find((t) => t.status === "Open" && t.kind !== "supplier-response");
-  if (open) return { owner: open.owner, action: open.title };
+  if (open) return open.owner;
   switch (s.dependency.state) {
-    case "Not detected": return { owner: "Agent", action: "Detect: read work order and inventory" };
-    case "Open": return { owner: "Agent", action: "Coordinate: create Purchasing-owned supplier follow-up" };
-    case "Awaiting supplier": return { owner: PEOPLE.purchasing, action: "Obtain supplier confirmation by Mon 15:00" };
-    case "Awaiting receipt": return { owner: PEOPLE.inventoryLead, action: "Record authorized warehouse receipt for P-USB-410" };
-    case "Verified": return { owner: PEOPLE.coordinator, action: "Run readiness rules and allocate component" };
-    case "Resolved": return { owner: s.workOrder.technician, action: "Perform service visit (human)" };
-    default: return { owner: PEOPLE.coordinator, action: "Review" };
+    case "Awaiting supplier": return PEOPLE.purchasing;
+    case "Awaiting receipt": return PEOPLE.inventoryLead;
+    case "Resolved": return s.workOrder.technician;
+    default: return PEOPLE.coordinator;
   }
 }
 
-function Workflow() {
+function AgentRun() {
   const { snapshots, current, stepsRun } = useDemo();
+  const [inspect, setInspect] = useState<number | null>(null);
+  const lastOk = stepsRun === 0 || stageVerified(STAGES[stepsRun - 1]!.key, current);
+  const next = lastOk && stepsRun < STAGES.length ? STAGES[stepsRun]! : null;
+  const done = stepsRun === STAGES.length && lastOk;
   const wo = current.workOrder;
   const m = milestones(current);
-  const na = nextAction(current);
-  const protectedAppt = wo.status === "Logistics Ready";
-  const guards = readinessGuards(current);
+  const nextLabel = !lastOk ? "Human review of the failed step" : next ? next.title : "Technician performs the service visit";
+
+  const run = () => { setInspect(null); demo.next(); };
 
   return (
     <div className="space-y-8">
-      {/* SR-2041 summary */}
-      <section className="rounded-md border bg-card p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-2xl space-y-2">
-            <Eyebrow>Service request {wo.id} · {wo.customer}</Eyebrow>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Service appointment at risk: required component {wo.requiredPartId} not in stock
-            </h1>
-            <p className="text-sm text-muted-foreground">{wo.equipment} · {wo.site}</p>
+      {/* Problem card */}
+      <section className="rounded-lg border bg-card p-5">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div>
+            <div className="text-xs text-muted-foreground">SR-2041 · Ultrasound service</div>
+            <div className="text-lg font-semibold">Missing part P-USB-410</div>
           </div>
-          <StatusBadge status={wo.status} />
+          <Item label="Appointment" value={`${fmt(wo.appointment)}`} />
+          <div>
+            <div className="text-xs text-muted-foreground">Status</div>
+            <StatusBadge status={wo.status} />
+          </div>
+          <Item label="Responsible" value={owner(current).replace(" (demo)", "")} />
+          <Item label="Next required action" value={nextLabel} testId="next-action" />
         </div>
-        <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <Fact label="Current status" value={`${wo.status} · dependency ${current.dependency.state}`} />
-          <Fact label="Accountable owner" value={na.owner} />
-          <Fact label="Next action" value={na.action} testId="next-action" />
-          <Fact
-            label="Appointment"
-            value={`${fmt(wo.appointment)} — ${protectedAppt ? "protected" : "at risk"}`}
-            className={protectedAppt ? "text-success" : "text-destructive"}
-          />
-        </dl>
       </section>
 
-      {/* Three milestones */}
-      <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Three separate milestones</h2>
-        <div className="grid gap-px overflow-hidden rounded-md border bg-border md:grid-cols-3">
-          <Milestone n={1} done={m.supplierResponded} title="Supplier-response task completed" note="Purchasing follow-up closed. The reply is an unverified claim — no stock changes." />
-          <Milestone n={2} done={m.blockerResolved} title="Missing-component blocker resolved" note={m.componentVerified && !m.blockerResolved ? "Component received and verified by warehouse; not yet allocated." : "Correct, compatible part received by warehouse, verified and allocated to SR-2041."} partial={m.componentVerified && !m.blockerResolved} />
-          <Milestone n={3} done={m.logisticsReady} title="Service request Logistics Ready" note="All logistics prerequisites pass; the service visit can proceed." />
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Logistics Ready is not clinical sign-off. Technician servicing, required documentation and authorized clinical release remain separate, outstanding human steps.
-        </p>
+      {/* Timeline */}
+      <ol className="flex flex-wrap items-center gap-2" aria-label="Progress">
+        {STAGES.map((st, i) => {
+          const snap = snapshots[i + 1];
+          const ok = !!snap && stageVerified(st.key, snap);
+          const failed = !!snap && !ok;
+          const isCurrent = !snap && i === stepsRun && lastOk;
+          return (
+            <li key={st.key} className="flex items-center gap-2">
+              <button
+                type="button"
+                data-testid={`step-${st.key}`}
+                data-state={ok ? "done" : failed ? "failed" : isCurrent ? "current" : "pending"}
+                disabled={!snap}
+                onClick={() => setInspect(inspect === i ? null : i)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm",
+                  ok && "border-success/40 bg-success/10 text-success",
+                  failed && "border-destructive/40 bg-destructive/10 text-destructive",
+                  isCurrent && "border-primary bg-accent font-medium text-accent-foreground",
+                  !snap && !isCurrent && "text-muted-foreground",
+                  inspect === i && "ring-2 ring-ring",
+                )}
+              >
+                {ok ? <Check className="h-3.5 w-3.5" /> : failed ? <AlertTriangle className="h-3.5 w-3.5" /> : <span className="text-xs">{i + 1}</span>}
+                {st.label}
+              </button>
+              {i < STAGES.length - 1 && <span className="h-px w-4 bg-border" />}
+            </li>
+          );
+        })}
+        {stepsRun > 0 && <li className="ml-auto text-xs text-muted-foreground">Click a completed step to review it</li>}
+      </ol>
+
+      {/* Current action / inspection panel */}
+      <section className="rounded-lg border-2 border-primary/30 bg-card p-6 shadow-sm" data-testid="action-panel">
+        {inspect !== null ? (
+          <>
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Reviewing step {inspect + 1} (read-only)</span>
+              <Button size="sm" variant="ghost" onClick={() => setInspect(null)}>Back to current action</Button>
+            </div>
+            <Result i={inspect} before={snapshots[inspect]!} after={snapshots[inspect + 1]!} />
+          </>
+        ) : (
+          <div className="space-y-6">
+            {stepsRun > 0 && <Result i={stepsRun - 1} before={snapshots[stepsRun - 1]!} after={current} />}
+            {next && (
+              <div className={cn(stepsRun > 0 && "border-t pt-6")}>
+                <div className="text-xs font-medium uppercase tracking-wider text-primary">{stepsRun === 0 ? "Start here" : "Next action"} · step {stepsRun + 1} of 5</div>
+                <h2 className="mt-1 text-xl font-semibold">{next.title}</h2>
+                <p className="mt-1 max-w-2xl text-muted-foreground">{next.explain}</p>
+                <Button size="lg" className="mt-4" onClick={run} data-testid="primary-action">
+                  {next.button} <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            {!lastOk && (
+              <div className="border-t pt-6 text-sm">
+                <div className="font-medium">Workflow paused for human review.</div>
+                <p className="text-muted-foreground">The agent will not continue automatically. Use Reset Demo to start over.</p>
+              </div>
+            )}
+            {done && (
+              <div className="border-t pt-6">
+                <div className="text-xs font-medium uppercase tracking-wider text-primary">Agent work complete</div>
+                <h2 className="mt-1 text-xl font-semibold">Hand-off to people</h2>
+                <p className="mt-1 text-muted-foreground">Logistics Ready means the visit can proceed. It is not clinical sign-off. These remain with people:</p>
+                <ul className="mt-2 space-y-1 text-sm">
+                  <li className="flex gap-2"><UserRound className="h-4 w-4 text-muted-foreground" />Technician servicing — {wo.repairStatus}</li>
+                  <li className="flex gap-2"><UserRound className="h-4 w-4 text-muted-foreground" />Required service documentation — not started</li>
+                  <li className="flex gap-2"><UserRound className="h-4 w-4 text-muted-foreground" />Clinical release — {wo.clinicalRelease}</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
-      {/* Guided stages */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Guided workflow</h2>
-          <Button size="sm" onClick={() => demo.next()} disabled={stepsRun >= STAGES.length}>
-            <Play className="h-3.5 w-3.5" />
-            {stepsRun >= STAGES.length ? "All stages run" : `Run ${STAGES[stepsRun]!.label}`}
-          </Button>
-        </div>
-        <ol className="divide-y rounded-md border bg-card">
-          {STAGES.map((st, i) => {
-            const snap = snapshots[i + 1];
-            const ran = !!snap;
-            const ok = ran && stageVerified(st.key, snap);
-            const entries = ran ? snap.log.slice(snapshots[i]!.log.length) : [];
-            return (
-              <li key={st.key} data-testid={`stage-${st.key}`} data-state={ok ? "verified" : ran ? "not-verified" : "pending"} className="grid gap-3 p-4 md:grid-cols-[180px_1fr_200px]">
-                <div className="flex items-center gap-2">
-                  {ok ? <Check className="h-4 w-4 text-success" /> : ran ? <CircleDashed className="h-4 w-4 text-warning" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
-                  <span className="font-medium">{i + 1}. {st.label}</span>
-                </div>
-                <div className="text-sm">
-                  <p className="text-muted-foreground">{st.summary}</p>
-                  {entries.map((e, k) => (
-                    <p key={k} className="mt-1">
-                      <span className="text-xs text-muted-foreground">[{e.sourceSystem}]</span> {e.action}
-                      {e.error && <span className="ml-1 text-destructive">— {e.error}</span>}
-                    </p>
-                  ))}
-                </div>
-                <div className="text-xs">
-                  {ran ? (
-                    <>
-                      <div className="font-mono">{snap.workOrder.status}</div>
-                      <div className="text-muted-foreground">Dependency: {snap.dependency.state}</div>
-                      <div className={ok ? "text-success" : "text-warning-foreground"}>{ok ? "Verified by state" : "Not verified"}</div>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">Not run</span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+      {/* Milestones */}
+      <section className="grid gap-3 sm:grid-cols-3">
+        <Milestone n={1} done={m.supplierResponded} title="Supplier replied" note="Follow-up closed. A claim, not stock." />
+        <Milestone n={2} done={m.blockerResolved} partial={m.componentVerified && !m.blockerResolved} title="Missing-part blocker resolved" note="Part received, verified and allocated." />
+        <Milestone n={3} done={m.logisticsReady} title="Logistics Ready" note="Visit can proceed. Not clinical sign-off." />
       </section>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Logistics readiness rules (now)</h2>
-          <ul className="space-y-1 text-sm">
-            {guards.map((g) => (
+      {/* Details */}
+      <div className="space-y-2">
+        <Details title="Readiness requirements">
+          <ul className="grid gap-1 text-sm sm:grid-cols-2">
+            {readinessGuards(current).map((g) => (
               <li key={g.label} className="flex items-start gap-2">
                 {g.pass ? <Check className="mt-0.5 h-4 w-4 text-success" /> : <Circle className="mt-0.5 h-4 w-4 text-muted-foreground" />}
                 <span className={g.pass ? "" : "text-muted-foreground"}>{g.label}</span>
               </li>
             ))}
           </ul>
-          <div className="mt-4 rounded-md bg-muted p-3 text-sm">
-            <div className="font-medium">Human approval still pending</div>
-            <ul className="mt-1 space-y-0.5 text-muted-foreground">
-              <li>Technician servicing — {wo.repairStatus}</li>
-              <li>Required service documentation — not started</li>
-              <li>Clinical release — {wo.clinicalRelease}</li>
-            </ul>
-          </div>
-        </section>
-        <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Action history</h2>
+        </Details>
+        <Details title={`Activity log (${current.log.length})`}>
           {current.log.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No events yet. Run Detect to begin.</p>
+            <p className="text-sm text-muted-foreground">Nothing yet.</p>
           ) : (
-            <ol className="space-y-2 text-sm" data-testid="history">
+            <ol className="space-y-1.5 text-sm" data-testid="history">
               {current.log.map((e, k) => (
-                <li key={k} className="border-l-2 border-primary/40 pl-3">
-                  <div className="font-mono text-xs text-muted-foreground">{e.timestamp} · {e.sourceSystem}</div>
-                  <div>{e.action}</div>
-                  {e.humanReview && <div className="text-xs text-warning-foreground">Human review: {e.humanReview}</div>}
+                <li key={k}>
+                  <span className="font-mono text-xs text-muted-foreground">{e.timestamp} · {e.sourceSystem} · {e.eventId}</span>
+                  <div>{e.action}{e.error && <span className="text-destructive"> — {e.error}</span>}</div>
                 </li>
               ))}
             </ol>
           )}
-        </section>
+        </Details>
       </div>
     </div>
   );
 }
 
-function Fact({ label, value, className, testId }: { label: string; value: string; className?: string; testId?: string }) {
+function Result({ i, before, after }: { i: number; before: SimState; after: SimState }) {
+  const st = STAGES[i]!;
+  const ok = stageVerified(st.key, after);
+  const changes = stateChanges(before, after);
+  const entries = after.log.slice(before.log.length);
+  const errors = entries.filter((e) => e.error);
+  return (
+    <div data-testid="result" data-ok={ok}>
+      <div className={cn("flex items-start gap-3", ok ? "text-success" : "text-destructive")}>
+        {ok ? <Check className="mt-0.5 h-5 w-5 shrink-0" /> : <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />}
+        <div>
+          <div className="text-xs font-medium uppercase tracking-wider">{ok ? "Done" : "Needs human review"} · {st.button}</div>
+          <div className="text-lg font-semibold text-foreground">{ok ? st.success : "This step did not reach its verified outcome."}</div>
+          {errors.map((e, k) => <div key={k} className="text-sm">{e.action} — {e.error}</div>)}
+        </div>
+      </div>
+      {changes.length > 0 && (
+        <div className="mt-4 overflow-hidden rounded-md border">
+          <div className="bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">What changed in the records</div>
+          <ul className="divide-y text-sm">
+            {changes.map((c) => (
+              <li key={c.label} className="grid gap-1 px-3 py-2 sm:grid-cols-[200px_1fr]">
+                <span className="text-muted-foreground">{c.label} <span className="text-xs">· {c.system}</span></span>
+                <span><span className="text-muted-foreground line-through">{c.from}</span> <ArrowRight className="inline h-3 w-3" /> <span className="font-medium">{c.to}</span></span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Item({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
     <div>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd data-testid={testId} className={cn("mt-0.5 font-medium", className)}>{value}</dd>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-sm font-medium" data-testid={testId}>{value}</div>
     </div>
   );
 }
 
 function Milestone({ n, done, title, note, partial }: { n: number; done: boolean; title: string; note: string; partial?: boolean }) {
   return (
-    <div data-testid={`milestone-${n}`} data-done={done} className="bg-card p-4">
-      <div className="flex items-center gap-2">
-        {done ? <Check className="h-4 w-4 text-success" /> : partial ? <CircleDashed className="h-4 w-4 text-warning" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
-        <span className="text-xs text-muted-foreground">Milestone {n}</span>
+    <div data-testid={`milestone-${n}`} data-done={done} className={cn("rounded-lg border p-4", done ? "border-success/40 bg-success/5" : "bg-card")}>
+      <div className="flex items-center gap-2 text-sm font-medium">
+        {done ? <Check className="h-4 w-4 text-success" /> : <Circle className={cn("h-4 w-4", partial ? "text-warning" : "text-muted-foreground")} />}
+        <span className={done ? "" : "text-muted-foreground"}>{title}</span>
       </div>
-      <div className={cn("mt-1 font-medium", !done && "text-muted-foreground")}>{title}</div>
-      <p className="mt-1 text-xs text-muted-foreground">{note}</p>
-      <div className={cn("mt-2 text-xs font-medium", done ? "text-success" : "text-muted-foreground")}>{done ? "Complete" : partial ? "In progress" : "Not complete"}</div>
+      <p className="mt-1 text-xs text-muted-foreground">{partial ? "Part verified; not yet allocated." : note}</p>
     </div>
+  );
+}
+
+function Details({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <details className="group rounded-lg border bg-card">
+      <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium">
+        {title}
+        <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="border-t px-4 py-3">{children}</div>
+    </details>
   );
 }
