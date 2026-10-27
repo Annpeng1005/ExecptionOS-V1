@@ -1,23 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { demo, useDemo } from "@/lib/demo-store";
-import { StatusBadge } from "@/components/demo-ui";
+import { demo } from "@/lib/demo-store";
 
 const tabs = [
-  { to: "/", label: "Client Brief" },
-  { to: "/workflow", label: "Live Workflow" },
-  { to: "/lab", label: "Deployment Lab" },
+  { to: "/", label: "Agent Run" },
+  { to: "/brief", label: "Business Case" },
+  { to: "/lab", label: "Testing & Logs" },
 ] as const;
 
 export function AppHeader() {
-  const { current } = useDemo();
-  return (
+    return (
     <header className="border-b bg-card">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-6 py-3">
         <div className="flex items-baseline gap-2">
           <span className="text-base font-semibold tracking-tight">ExceptionOS</span>
-          <span className="text-xs text-muted-foreground">fictional demo</span>
+          <span className="rounded bg-warning/20 px-1.5 py-0.5 text-xs font-medium text-warning-foreground">Fictional demo</span>
         </div>
         <nav className="flex gap-1">
           {tabs.map((t) => (
@@ -33,8 +31,6 @@ export function AppHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3">
-          <span className="font-mono text-xs text-muted-foreground">{current.workOrder.id}</span>
-          <StatusBadge status={current.workOrder.status} />
           <Button size="sm" variant="outline" onClick={() => demo.reset()}>
             <RotateCcw className="h-3.5 w-3.5" /> Reset Demo
           </Button>

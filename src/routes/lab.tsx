@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/lab")({
   head: () => ({
     meta: [
-      { title: "Deployment Lab — ExceptionOS demo" },
+      { title: "Testing & Logs — ExceptionOS demo" },
       { name: "description", content: "Mock system records, executable failure scenarios and the boundary between message interpretation and deterministic rules." },
-      { property: "og:title", content: "Deployment Lab — ExceptionOS demo" },
+      { property: "og:title", content: "Testing & Logs — ExceptionOS demo" },
       { property: "og:description", content: "Run six scenarios against the real engine and inspect pass/fail results." },
     ],
   }),
@@ -26,15 +26,24 @@ function Lab() {
   const runAll = () => setResults(Object.fromEntries(scenarios.map((s) => [s.id, runScenario(s)])));
   const ran = Object.values(results);
   const passed = ran.filter((r) => r.pass).length;
+  const failed = ran.length - passed;
+  const notRun = scenarios.length - ran.length;
 
   return (
     <div className="space-y-10">
       <div className="space-y-2">
-        <Eyebrow>Engineering and reliability</Eyebrow>
-        <h1 className="text-2xl font-semibold tracking-tight">Deployment Lab</h1>
+        <Eyebrow>Testing & Logs</Eyebrow>
+        <h1 className="text-2xl font-semibold tracking-tight">Does the agent fail safely?</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Mock system records reflect the Live Workflow's current state. Scenarios run separately, each from a fresh baseline.
+          Each scenario runs the real workflow rules from a clean start. Running them never changes the Agent Run screen.
         </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-6 rounded-lg border bg-card p-5" data-testid="test-summary">
+        <Count n={notRun} label="Not yet run" />
+        <Count n={passed} label="Passed" tone="text-success" />
+        <Count n={failed} label="Failed" tone={failed ? "text-destructive" : undefined} />
+        <Button className="ml-auto" onClick={runAll}>Run all scenarios</Button>
       </div>
 
       <Section title="Interpretation vs deterministic rules">
@@ -50,7 +59,7 @@ function Lab() {
         </div>
       </Section>
 
-      <Section title="Mock system records (live demo state)">
+      <Section title="Mock system records (current Agent Run state)">
         <div className="grid gap-6 md:grid-cols-3">
           <Record title="Field Service" rows={[
             ["Work order", current.workOrder.id],
@@ -81,14 +90,6 @@ function Lab() {
       </Section>
 
       <Section title="Executable scenarios">
-        <div className="mb-3 flex items-center gap-3">
-          <Button size="sm" onClick={runAll}>Run all scenarios</Button>
-          {ran.length > 0 && (
-            <span data-testid="scenario-summary" className={cn("text-sm font-medium", passed === ran.length ? "text-success" : "text-destructive")}>
-              {passed} of {ran.length} passed
-            </span>
-          )}
-        </div>
         <div className="divide-y rounded-md border bg-card">
           {scenarios.map((sc) => {
             const r = results[sc.id];
@@ -97,7 +98,7 @@ function Lab() {
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-mono text-xs text-muted-foreground">{sc.id}</span>
                   <span className="font-medium">{sc.title}</span>
-                  <span className="text-sm text-muted-foreground">— {sc.expectedOutcome}</span>
+                  <span className="w-full text-sm text-muted-foreground md:w-auto">{sc.description} Expected: {sc.expectedOutcome.toLowerCase()}.</span>
                   <div className="ml-auto flex items-center gap-2">
                     {r && (r.pass
                       ? <span className="flex items-center gap-1 text-sm text-success"><Check className="h-4 w-4" />Pass</span>
@@ -105,6 +106,11 @@ function Lab() {
                     <Button size="sm" variant="outline" onClick={() => setResults((p) => ({ ...p, [sc.id]: runScenario(sc) }))}>Run</Button>
                   </div>
                 </div>
+                {r && (
+                  <p className={cn("mt-2 text-sm", r.pass ? "text-success" : "text-destructive")}>
+                    {r.pass ? `Behaved as expected: ${sc.expectedOutcome.toLowerCase()}.` : `Did not behave as expected — ${r.checks.filter((c) => !c.pass).map((c) => `${c.label}: expected ${c.expected}, got ${c.actual}`).join("; ")}.`}
+                  </p>
+                )}
                 {r && (
                   <details className="mt-2 text-sm">
                     <summary className="cursor-pointer text-muted-foreground">Checks and event history</summary>
@@ -150,6 +156,15 @@ function Record({ title, rows }: { title: string; rows: [string, string][] }) {
           </div>
         ))}
       </dl>
+    </div>
+  );
+}
+
+function Count({ n, label, tone }: { n: number; label: string; tone?: string | undefined }) {
+  return (
+    <div>
+      <div className={cn("text-2xl font-semibold", tone)} data-testid={`count-${label}`}>{n}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
     </div>
   );
 }
