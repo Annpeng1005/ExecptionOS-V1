@@ -6,5 +6,11 @@
   - [x] Idempotency for messages, receipts, tasks, allocations; full reset
   - [x] Interpreter failure leaves inventory + work order unchanged; B1 (email) and B2 (receipt) tested separately
 - [x] Run happy-path + wrong-component tests before building UI
-- [ ] Phase 2–5 (UI, remaining scenarios, polish) — awaiting user go-ahead after Phase 1
+
 - Guided workflow must show per-step snapshot state, not final state retroactively (UI phase)
+- [x] Phase 2: Client Brief (/), Live Workflow (/workflow), Deployment Lab (/lab)
+  - Objective wording, 3 KPIs "Not measured — requires customer baseline", no hospital-cancellation claims
+  - Purchasing-owned supplier follow-up; reply = unverified claim; no courier tracking
+  - Three distinct milestones: supplier task completed / blocker resolved / Logistics Ready
+  - Logistics Ready ≠ clinical sign-off; servicing, documentation, clinical release remain outstanding
+  - Verify in browser: 5 steps, milestones, 6 scenarios, Reset
