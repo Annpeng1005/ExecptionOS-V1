@@ -15,5 +15,5 @@
   - Logistics Ready ≠ clinical sign-off; servicing, documentation, clinical release remain outstanding
   - Verify in browser: 5 steps, milestones, 6 scenarios, Reset
 - [x] UX redesign: Agent Run (/), Business Case (/brief), Testing & Logs (/lab); one action at a time
-- [ ] Final showcase: simplified workspace, explicit external-event pauses, concise Business Case, scenario evidence
-- [ ] Verify 13 engine tests, both execution modes, wrong components, history, tab consistency and full reset
+- [x] Final showcase: simplified workspace, explicit external-event pauses, concise Business Case, scenario evidence
+- [x] Verify 13 engine tests, both execution modes, wrong components, history, tab consistency and full reset
