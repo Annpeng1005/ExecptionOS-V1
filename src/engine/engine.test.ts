@@ -28,7 +28,7 @@ describe("ExceptionOS engine", () => {
   });
 
   it("reset returns to the same baseline", () => {
-    const s = runEvents(createSeed(), scenarios[0].events);
+    const s = runEvents(createSeed(), scenarios[0]!.events);
     expect(s).not.toEqual(createSeed());
     expect(createSeed()).toEqual(createSeed());
   });
