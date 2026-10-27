@@ -5,8 +5,8 @@
 
 The project translates a fictional customer problem into a working simulation, demonstrating how to coordinate responsibilities across existing systems, verify information before taking action, and route exceptions to the appropriate teams.
 
-**Live Demo:** Coming soon  
-**2-Minute Walkthrough:** Coming soon
+**Live Demo:https://www.loom.com/share/f94654a058fd4d75a34888e3e485f403 
+
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/85565bdb-2c5a-48ff-98a3-3c11d11f89fa" />
 
