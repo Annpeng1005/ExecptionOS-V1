@@ -110,7 +110,14 @@ function Lab() {
                       : <span className="flex items-center gap-1 text-sm text-destructive"><X className="h-4 w-4" />Fail</span>) : <span className="text-muted-foreground">Not run</span>}
                   </div>
                 </div>
-                {r && (
+                {r && sc.id === "D" && (
+                  <div className="mt-2 text-sm" data-testid={`summary-${sc.id}`}>
+                    <span className={cn("mr-2 rounded px-1.5 py-0.5 text-xs font-medium", r.pass ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive")}>{r.pass ? "Duplicates safely ignored" : "Duplicate handling failed"}</span>
+                    Repeated events were processed once: {r.final.tasks.length} task{r.final.tasks.length === 1 ? "" : "s"}, {r.final.receipts.length} receipt, {r.final.allocations.length} allocation — no duplicates created.
+                    {r.final.workOrder.status === "Logistics Ready" && <p className="mt-1 text-xs text-muted-foreground">Secondary outcome: Logistics Ready was reached through the legitimate, non-duplicate events.</p>}
+                  </div>
+                )}
+                {r && sc.id !== "D" && (
                   <div className="mt-2 text-sm" data-testid={`summary-${sc.id}`}>
                     <span className={cn("mr-2 rounded px-1.5 py-0.5 text-xs font-medium", outcomeLabel(r.final) === "Service logistics ready" ? "bg-success/15 text-success" : outcomeLabel(r.final) === "Execution error" ? "bg-destructive/10 text-destructive" : "bg-warning/20 text-warning-foreground")}>{outcomeLabel(r.final)}</span>
                     {operationalSummary(r.final, createSeed())}
