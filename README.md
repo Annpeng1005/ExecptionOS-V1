@@ -4,7 +4,7 @@
 
 An interactive proof of concept exploring how a medical-equipment service provider could coordinate supplier follow-ups, inventory verification and field-service operations.
 
-[Watch the video walkthrough](https://www.loom.com/share/f0bf98ca3eba408982d6932ded4f8c77) ·
+[Watch the video walkthrough]https://www.loom.com/share/1b2572974af244b39e291ac84fb3ca1e ·
 
 *Independent project built with Lovable and AI-assisted development. All customer scenarios and operational records are fictional.*
 
@@ -68,7 +68,7 @@ The workflow preserves that distinction.
 
 ## 3. Watch the Workflow Run
 
-[Watch the demonstration](https://www.loom.com/share/f0bf98ca3eba408982d6932ded4f8c77)
+[Watch the demonstration]https://www.loom.com/share/1b2572974af244b39e291ac84fb3ca1e
 
 ### Successful Scenario
 
