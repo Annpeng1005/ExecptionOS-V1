@@ -1,122 +1,183 @@
+# ExceptionOS
 
-### From operational blockers to verified service readiness
+**From disconnected service updates to verified service readiness.**
 
-**ExceptionOS** is an interactive proof of concept exploring how a medical-equipment service provider could coordinate supplier follow-ups, inventory verification, and field-service operations.
+An interactive proof of concept exploring how a medical-equipment service provider could coordinate supplier follow-ups, inventory verification and field-service operations.
 
-The project translates a fictional customer problem into a working simulation, demonstrating how to coordinate responsibilities across existing systems, verify information before taking action, and route exceptions to the appropriate teams.
+[Watch the video walkthrough](https://www.loom.com/share/f0bf98ca3eba408982d6932ded4f8c77) · **Interactive demo:** Add published application link
 
-**Live Demo:https://www.loom.com/share/f94654a058fd4d75a34888e3e485f403 
+*Independent project built with Lovable and AI-assisted development. All customer scenarios and operational records are fictional.*
+
+## 1. Why I Built This
+
+In 2024, I waited six hours in an emergency department for a chest X-ray. When I asked about the delay, a nurse told me the X-ray machine was broken and needed servicing.
+
+That experience stayed with me.
+
+Later, while researching medical-equipment availability in Canada, I found that a national imaging inventory reported an average of **87.5 hours of annual unplanned CT downtime** among 166 responding sites in 2022–2023. One British Columbia site also reported prolonged downtime associated with delayed replacement-part delivery.
+
+[Source: Canadian Medical Imaging Inventory 2022–2023 — CT, published 2024](https://www.ncbi.nlm.nih.gov/books/NBK607343/)
+
+My hospital experience and these CT findings concern different equipment and situations; neither establishes that coordination caused the delays.
+
+But they raised a question:
+
+**When equipment needs servicing, how much of the work happens between existing systems—and could some of that coordination be made more reliable?**
+
+ExceptionOS explores one potential answer.
+
+## 2. The Customer Problem
+
+Imagine a medical-equipment service provider supporting hospitals and clinics.
+
+At Lakeshore General Hospital, an ultrasound service visit is scheduled for Tuesday at 1:00 p.m., but replacement component **P-USB-410** is missing.
+
+Multiple teams are involved:
+
+- **Purchasing:** Obtains supplier updates.
+- **Supplier:** Communicates availability and delivery information.
+- **Warehouse:** Confirms physical receipt and correct component identity.
+- **Service Operations:** Tracks readiness and coordinates the visit.
+
+The company may already have software for each responsibility. The opportunity lies in coordinating the dependencies between them.
+
+### Illustrative Current Workflow
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d7c8355f-fa4f-45b6-8295-664b8efa350c" />
 
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/85565bdb-2c5a-48ff-98a3-3c11d11f89fa" />
+**What we are hypothesizing:** The coordinator may need to chase updates, reconcile information across systems and determine who should act next.
 
+This is an illustrative operating process, not a verified description of any specific provider. A real deployment would begin by mapping the customer's actual workflow.
 
-> **Project scope:** Built with Lovable and AI-assisted development using fictional data, simulated enterprise systems, a TypeScript workflow engine, and deterministic business rules. Supplier-message interpretation is simulated; no live language model or customer integrations are connected.
+### Proposed ExceptionOS Workflow
 
-## 1. The Business Problem
+*Insert proposed-workflow diagram here.*
 
-A hospital has a scheduled ultrasound service visit, but replacement component **P-USB-410** is unavailable.
+ExceptionOS models a shared workflow that:
 
-Resolving this dependency may involve Purchasing, a supplier, warehouse staff, and service operations working across separate systems.
+1. Detects a missing component.
+2. Creates a named Purchasing follow-up.
+3. Records the supplier's response.
+4. Verifies authorized warehouse evidence before changing inventory status.
+5. Updates service logistics when required conditions are satisfied.
 
-**Customer objective:** Reduce avoidable service delays and manual coordination while maintaining accurate service commitments.
+**Core design decision:** A supplier saying a part has shipped is not the same as a warehouse confirming the correct part is available.
 
-**Hypothesis:** Better coordination and clearer ownership across these systems could improve service readiness.
+The workflow preserves that distinction.
 
-This hypothesis requires validation with real customer data.
+## 3. Watch the Workflow Run
 
-## 2. How ExceptionOS Works
+[Watch the demonstration](https://www.loom.com/share/f0bf98ca3eba408982d6932ded4f8c77)
 
-The simulation follows one service request, **SR-2041**.
+### Successful Scenario
 
-```text
-Missing component detected
-          ↓
-Purchasing follow-up created
-          ↓
-Supplier response received
-          ↓
-Warehouse verifies physical receipt
-          ↓
-Component allocated after required checks
-          ↓
-Work order becomes Logistics Ready
-```
+*Insert actual Agent Run screenshot showing Logistics Ready.*
 
-The system also handles exceptions:
+The simulation follows work order **SR-2041** through supplier follow-up, warehouse verification, component allocation and service-readiness confirmation.
 
-- **Wrong component:** Keep the work order blocked and assign a reconciliation task.
-- **Delayed shipment:** Flag the appointment at risk for dispatcher review.
-- **Duplicate update:** Prevent duplicate business actions.
-- **Interpretation failure:** Preserve the work order state and request human review.
+**Logistics Ready** means the simulated logistics requirements are satisfied. It does not mean the equipment has been repaired or cleared for clinical use.
 
-**Important distinction:** Supplier confirmation is not verified inventory. Logistics Ready does not mean repair completed or equipment authorized for clinical use.
+### When Something Goes Wrong
 
-## 3. Implementation
+*Insert actual B1 testing screenshot.*
 
-The prototype uses three simulated enterprise systems:
+If the supplier confirms component **P-USB-405** instead of **P-USB-410**, the workflow:
+
+- Keeps the request blocked.
+- Prevents incorrect allocation.
+- Creates a reconciliation action for Purchasing.
+
+The purpose is not just to complete a workflow, but to ensure that it behaves appropriately when the information is wrong or incomplete.
+
+## 4. What Could the Business Gain?
+
+The potential value for a medical-equipment service provider is less manual coordination, clearer ownership and more dependable service-readiness information.
+
+### Proposed Pilot Measures
+
+| Measure | Business question |
+|---|---|
+| Manual coordination minutes per request | Are teams spending less time chasing and reconciling updates? |
+| Blocker resolution time | Are parts-related dependencies resolved sooner? |
+| Correct completion rate | Does the workflow reach the appropriate outcome without unauthorized actions? |
+| Human intervention rate | Which requests can proceed automatically, and where is review needed? |
+
+### Illustrative Financial Opportunity
+
+Suppose a service provider handles **500 eligible requests per month**, and an improved workflow saves **20 net minutes per request**, at a loaded labour cost of **CAD $40/hour**.
+
+That represents:
+
+**500 × 20 ÷ 60 × $40 × 12 = CAD $80,000 in annual gross capacity value.**
+
+This is a hypothetical scenario, not a measured result or cash-savings forecast. Actual returns would depend on request volume, time saved, implementation costs, review burden and other operational factors.
+
+**The pilot decision:** Can we achieve meaningful improvements in coordination effort and completion reliability without increasing operational risk or cost disproportionately?
+
+## 5. How It Works Technically
+
+ExceptionOS uses three simulated enterprise systems:
 
 | System | Responsibility |
 |---|---|
 | Field Service | Work orders, appointments and technician assignments |
-| Inventory / ERP | Stock, physical receipts and allocations |
-| Supplier Email | Supplier communication and unverified delivery claims |
+| Inventory / ERP | Parts, receipts and allocations |
+| Supplier Email | Supplier communication and delivery claims |
 
-A TypeScript workflow engine coordinates the process using event-based state transitions and deterministic business rules.
+The application uses a TypeScript workflow engine, event-based transitions, deterministic business rules and simulated supplier-message interpretation.
 
-The simulated message interpreter is replaceable with a real model in a future implementation.
+The interface has three views:
 
-The application includes three views:
+- **Agent Run:** Execute and inspect the workflow.
+- **Testing & Logs:** Run scenarios and inspect expected versus observed behavior.
+- **Business Case:** Explore the customer hypothesis, operating measures and potential value.
 
-- **Agent Run:** Interactive workflow demonstrating actions and verified outcomes.
-- **Business Case:** Customer hypothesis, implementation rationale and pilot measures.
-- **Testing & Logs:** Executable scenarios, expected-versus-actual checks and event history.
+The prototype is not connected to live enterprise systems or a live language model.
 
-## 4. Testing and Reliability
+## 6. Testing and Reliability
 
-The project includes 13 automated unit tests and six interactive scenario categories covering successful execution and exception handling.
+The project includes 13 automated unit tests and six interactive scenario categories:
 
-Tests evaluate outcomes such as:
-- Correct component allocation
-- Work-order state transitions
-- Human review and escalation
-- Duplicate-event handling
-- Preservation of business rules when interpretation fails
-
-The tests exercise the simulated workflow; they do not establish reliability in a production environment.
-
-## 5. Business Value and Pilot Approach
-
-The prototype demonstrates the coordination mechanism, not measured business improvement.
-
-With a real customer, I would first validate the operational bottleneck and establish baselines for:
-
-| Proposed measure | Business question |
+| Scenario | Expected behavior |
 |---|---|
-| Blocker resolution time | How quickly can dependencies be resolved? |
-| Correct workflow completion rate | Does the automation complete eligible work accurately? |
-| Human coordination effort | How much manual work remains per request? |
+| Correct component received | Advance to Logistics Ready when requirements are met |
+| Wrong supplier component | Block allocation and request Purchasing review |
+| Wrong warehouse receipt | Block allocation and request Inventory review |
+| Delayed delivery | Flag the visit as at risk for Dispatch review |
+| Duplicate event | Avoid duplicate business actions |
+| Interpretation failure | Preserve state and route for human review |
 
-I'd also evaluate exception rates, review burden, implementation costs and whether the workflow offers enough value beyond simpler automation.
+These are simulated workflow tests, not production agent evaluations.
 
-**Proposed approach:** Discover → Test → Pilot → Measure → Improve.
+A future model-based implementation would require separate evaluations of extraction accuracy, correct actions, unsafe-action prevention and autonomous completion.
 
-## 6. What I Learned
+## 7. From Prototype to Customer Deployment
 
-Building ExceptionOS reinforced three practical deployment lessons:
+I would approach a real deployment in five steps:
 
-1. **Clear ownership matters.** Every open dependency needs a responsible person, next action and deadline.
-2. **Reliable actions require trustworthy evidence.** An unverified supplier message must not automatically change inventory or advance a service request.
-3. **A working workflow is not the same as proven business value.** Successful deployment requires customer discovery, representative testing and measurable operational outcomes.
+**Discover:** Interview service coordinators, Purchasing, warehouse and Dispatch teams. Map the actual process, systems, exceptions and baseline performance.
 
-## 7. Limitations and Next Steps
+**Prioritize:** Identify the handoff with the highest potential customer value. Check whether existing software or simpler automation already addresses it.
+
+**Pilot:** Implement a narrow workflow with clear data sources, business rules, permissions and human-review conditions.
+
+**Evaluate:** Measure correct completion, manual effort, blocker resolution and failure cases. Review representative agent outputs and errors.
+
+**Improve and reuse:** Work with the customer and engineering team to resolve issues, update tests and identify components that can accelerate subsequent deployments.
+
+## 8. Limitations and Lessons
 
 ExceptionOS is a proof of concept, not a production-ready enterprise agent.
 
-A real deployment would require customer-specific discovery, secure integrations, access permissions, durable workflow execution, production monitoring, and evaluation using representative customer data.
+Live deployment would require secure integrations, persistent execution, access controls, monitoring, real-model evaluations and validation with customer data.
 
-Potential future work includes introducing live model-based interpretation, learning from human corrections through regression tests, and measuring successful completion of eligible workflows with minimal intervention.
+Three lessons guided the project:
+
+1. **Automation starts with understanding the work.** An agent cannot reliably coordinate responsibilities that haven't been defined.
+2. **Action requires trustworthy evidence.** Unverified messages should not automatically change authoritative business records.
+3. **Technical success is only one part of deployment success.** The workflow must solve a customer problem and demonstrate value against an agreed performance bar.
 
 ---
 
-**Built as an independent learning project using Lovable and AI-assisted development.** The case, organisations, records and operational scenarios are fictional.
+*Built independently using Lovable and AI-assisted development. The scenario, organizations and records are fictional.*
