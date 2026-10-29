@@ -4,7 +4,7 @@
 
 An interactive proof of concept exploring how a medical-equipment service provider could coordinate supplier follow-ups, inventory verification and field-service operations.
 
-[Watch the video walkthrough](https://www.loom.com/share/f0bf98ca3eba408982d6932ded4f8c77) · **Interactive demo:** Add published application link
+[Watch the video walkthrough](https://www.loom.com/share/f0bf98ca3eba408982d6932ded4f8c77) ·
 
 *Independent project built with Lovable and AI-assisted development. All customer scenarios and operational records are fictional.*
 
